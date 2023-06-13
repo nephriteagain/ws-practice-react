@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+  }
+  html {
+    font-size: 16px;
+  }
+
+  /* For WebKit browsers (e.g., Chrome, Safari) */
+  ::-webkit-scrollbar {
+    width: 6px; /* Adjust the width as desired */  
+    height: 0px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #4a5568; /* Customize the scrollbar thumb color */
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin; /* Adjust the width as desired */
+    scrollbar-color: #4a5568 transparent; /* Customize the scrollbar thumb color */    
+  }
+
+  .client-id::before {
+    content: "your id";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: #dcdcdc;
+    font-size: 0.8rem;
+    border-radius: 0.2rem;
+    padding-inline: 1px;    
+    transform: translate(5%, -60%);
+    color: #4a5568
+  }
+
+
+
+  @media (max-width: 576px) {
+    html {
+      font-size: 12px;
+    }
+  }
+}
