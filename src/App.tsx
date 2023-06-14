@@ -6,6 +6,11 @@ import { useState, useEffect, useRef } from 'react'
 import { FaRegCircle } from 'react-icons/fa'
 import { IoMdClose } from 'react-icons/io'
 
+import DisconnectToast from './components/DisconnectToast'
+import QuitToast from './components/QuitToast'
+import Lobby from './components/Lobby'
+import Box from './components/Box'
+
 interface lobbyValue {
   host: string
   guest: string
@@ -24,7 +29,7 @@ type gameDataType = gameBox[]
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
 
-const ws = new WebSocket(import.meta.env.VITE_WS_DEV)
+const ws = new WebSocket(import.meta.env.VITE_WS)
 function App() {
   const [ clientId, setClientId ] = useState<string|null>(null)
   const [ openLobbies, setOpenLobbies ] = useState<lobbyObj>({})
@@ -154,13 +159,34 @@ function App() {
 
       if (response.type === 'quit' || response.type === 'disconnect') {
         const { message } = response.payload
-        setGameData(initialGame)
-        setGameStart(false)
-        setPlayerTurn('')
-        setPlayers(null)
-        setScore(null)
-
-        alert(message)
+        console.log(message)
+        
+        if (response.type === 'quit') {
+          const element = document.querySelector('.quit-toast') as HTMLDivElement
+          element.style.bottom = '3rem'
+          const timeout = setTimeout(() => {
+            element.style.bottom = '-10%'
+            setGameData(initialGame)
+            setGameStart(false)
+            setPlayerTurn('')
+            setPlayers(null)
+            setScore(null)
+            clearTimeout(timeout)
+          }, 2000)
+        }
+        if (response.type === 'disconnect') {
+          const element = document.querySelector('.disconnect-toast') as HTMLDivElement
+          element.style.bottom = '3rem'
+          const timeout = setTimeout(() => {
+            element.style.bottom = '-10%'
+            setGameData(initialGame)
+            setGameStart(false)
+            setPlayerTurn('')
+            setPlayers(null)
+            setScore(null)
+            clearTimeout(timeout)
+          }, 2000)
+        }
       }
 
     }
@@ -200,36 +226,15 @@ function App() {
           {openLobbyArray.map(([key ,value]: [string, lobbyValue]) => {
             const { host, guest } = value
             return (
-              <div className='flex flex-row max-w-[400px] min-w-[300px] text-[0.8rem] my-2 rounded-md hover:scale-110 transition-all duration-200 z-[2]'
+              <Lobby 
                 key={key}
-              >
-                <div className='basis-1/3 bg-gray-300 text-center px-1 py-1'>
-                  {host}
-                </div>
-                <div className='basis-1/3 bg-stone-300 text-center px-1 py-1'>
-                  {guest}
-                </div>
-                <div className='basis-1/3 bg-slate-300 text-center px-1 py-1'>
-                  { guest.length === 0 && host !== clientId &&
-                  <button className='bg-green-300 px-2 py-[0.1rem] text-sm rounded-md shadow-md drop-shadow-md hover:scale-x-105 active:scale-90 hover:bg-green-400 transition-all duration-200'
-                    onClick={() => joinLobby(host)}
-                  >
-                    join
-                  </button>}
-                  { host === clientId &&
-                  <button className='bg-red-300 px-2 py-[0.1rem] text-sm rounded-md shadow-md drop-shadow-md hover:scale-x-105 active:scale-90 hover:bg-red-400 transition-all duration-200'
-                    onClick={deleteLobby}
-                  >
-                    delete
-                  </button>}
-                  { guest === clientId  &&
-                  <button className='bg-orange-300 px-2 py-[0.1rem] text-sm rounded-md shadow-md drop-shadow-md hover:scale-x-105 active:scale-90 hover:bg-orange-400 transition-all duration-200'
-                    onClick={() => leaveLobby(host)}
-                  >
-                    leave
-                  </button>}
-                </div>
-              </div>
+                host={host}
+                guest={guest}
+                clientId={clientId}
+                joinLobby={joinLobby}
+                deleteLobby={deleteLobby}
+                leaveLobby={leaveLobby}
+              />
             )
           })} 
         </div>
@@ -261,23 +266,17 @@ function App() {
           'mb-1 w-fit h-fit mx-auto px-6 py-1 shadow-md drop-shadow-md rounded-md font-bold text-2xl bg-red-300'
         }
         >
-            {playerTurn.length > 0 && playerTurn === clientId ? 'Your Turn' : "Opponent's Turn"}
-          </div>
+          {playerTurn.length > 0 && playerTurn === clientId ? 'Your Turn' : "Opponent's Turn"}
+        </div>
         <div className='grid grid-cols-3 w-fit h-fit mx-auto mt-2 mb-4 min-w-[300px] shadow-lg drop-shadow-lg'>
             {gameData.map((box, index) => {
               return (
-                <div key={index}
-                className='odd:bg-[#fcfcfc] even:bg-zinc-400 w-[100px] aspect-square even:shadow-lg even:drop-shadow-lg'
-                onClick={() => move(box, index)}
-                >
-                  <div className="w-full h-full text-7xl flex items-center justify-center">
-                    {box === 'x' ? 
-                    <IoMdClose className="fill-blue-600 scale-[1.3]" /> : 
-                    box === 'o' ? 
-                    <FaRegCircle className="fill-red-600" /> : 
-                    ''}
-                  </div>
-                </div>
+                <Box 
+                  key={index}
+                  box={box}
+                  index={index}
+                  move={move}
+                />
               )
             })}
           </div>
@@ -287,6 +286,8 @@ function App() {
       >
         Leave Game
       </button>
+      <DisconnectToast />
+      <QuitToast />
     </div>
     }
     </>
