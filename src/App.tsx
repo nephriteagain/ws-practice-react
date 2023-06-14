@@ -104,17 +104,7 @@ function App() {
     ws.send(payload)
   }
 
-  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-    e.preventDefault()
-    let data = {};
-    if (players) {
-      data = { type: 'disconnect', id: clientId, host: players.host, guest: players.guest };
-    } else {
-      data = { type: 'disconnect', id: clientId };
-    }
-    const payload = JSON.stringify(data);
-    ws.send(payload);
-  };
+
 
   useEffect(() => {
     ws.onmessage = message => {
@@ -175,28 +165,8 @@ function App() {
 
     }
 
-    ws.onclose = () => {
-      let data = {}
-      if (players) {
-        data = {type: 'disconnect', id: clientId, host: players.host, guest: players.guest}
-      } else {
-        data = {type: 'disconnect', id: clientId }
-      }
-      const payload = JSON.stringify(data)
-      ws.send(payload)
+   
 
-      setGameData(initialGame)
-      setGameStart(false)
-      setPlayerTurn('')
-      setPlayers(null)
-      setScore(null)
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
 
   }, [])
 
