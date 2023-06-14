@@ -23,6 +23,8 @@ type gameDataType = gameBox[]
 
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
+
+const ws = new WebSocket(import.meta.env.VITE_WS_DEV)
 function App() {
   const [ clientId, setClientId ] = useState<string|null>(null)
   const [ openLobbies, setOpenLobbies ] = useState<lobbyObj>({})
@@ -36,21 +38,23 @@ function App() {
 
   const btnRef = useRef<HTMLButtonElement>(null)
   
-  const ws = new WebSocket(import.meta.env.VITE_WS)
 
   function createLobby() {
+    if (!clientId) return
     const data = {type: 'create', id: clientId}
     const payload = JSON.stringify(data)
     ws.send(payload)
   }
 
   function deleteLobby() {
+    if (!clientId) return
     const data = {type: 'delete', id: clientId}
     const payload = JSON.stringify(data)
     ws.send(payload)
   }
 
   function joinLobby(lobbyId: string) {
+    if (!clientId) return
     if (joinedLobbyId && joinedLobbyId !== lobbyId) {
       leaveLobby(joinedLobbyId)
     }
@@ -62,7 +66,8 @@ function App() {
   }
 
   function leaveLobby(lobbyId: string) {
-    const data = {type: 'leave', lobbyId}
+    if (!clientId) return
+    const data = {type: 'leave', lobbyId, id: clientId}
     const payload = JSON.stringify(data)
     ws.send(payload)
     setJoinedLobbyId(null)
@@ -85,18 +90,31 @@ function App() {
       gameId: players.host, 
       playerId: clientId, 
       nextTurn,
-      gameData: newGameData
+      gameData: newGameData,
+      id: clientId
     }
     const payload = JSON.stringify(data)
     ws.send(payload)
   }
 
   function quitGame() {
-    if (players === null) return
-    const data = {type: 'quit', gameId: players.host, players}
+    if (players === null || !clientId) return
+    const data = {type: 'quit', gameId: players.host, players, id: clientId}
     const payload = JSON.stringify(data)
     ws.send(payload)
   }
+
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    e.preventDefault()
+    let data = {};
+    if (players) {
+      data = { type: 'disconnect', id: clientId, host: players.host, guest: players.guest };
+    } else {
+      data = { type: 'disconnect', id: clientId };
+    }
+    const payload = JSON.stringify(data);
+    ws.send(payload);
+  };
 
   useEffect(() => {
     ws.onmessage = message => {
@@ -144,7 +162,7 @@ function App() {
         
       }
 
-      if (response.type === 'quit') {
+      if (response.type === 'quit' || response.type === 'disconnect') {
         const { message } = response.payload
         setGameData(initialGame)
         setGameStart(false)
@@ -156,6 +174,29 @@ function App() {
       }
 
     }
+
+    ws.onclose = () => {
+      let data = {}
+      if (players) {
+        data = {type: 'disconnect', id: clientId, host: players.host, guest: players.guest}
+      } else {
+        data = {type: 'disconnect', id: clientId }
+      }
+      const payload = JSON.stringify(data)
+      ws.send(payload)
+
+      setGameData(initialGame)
+      setGameStart(false)
+      setPlayerTurn('')
+      setPlayers(null)
+      setScore(null)
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
 
   }, [])
 
