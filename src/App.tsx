@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 
 
-import { FaRegCircle } from 'react-icons/fa'
-import { IoMdClose } from 'react-icons/io'
 
 import DisconnectToast from './components/DisconnectToast'
 import QuitToast from './components/QuitToast'
