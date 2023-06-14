@@ -36,7 +36,7 @@ function App() {
 
   const btnRef = useRef<HTMLButtonElement>(null)
   
-  const ws = new WebSocket("ws:localhost:8999")
+  const ws = new WebSocket(import.meta.env.VITE_WS)
 
   function createLobby() {
     const data = {type: 'create', id: clientId}
