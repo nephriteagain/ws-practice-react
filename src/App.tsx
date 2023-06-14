@@ -165,8 +165,7 @@ function App() {
 
     }
 
-   
-
+  
 
   }, [])
 
@@ -197,20 +196,20 @@ function App() {
           </p>
           </div>
         
-        <div className='h-[350px] min-w-[350px] bg-gray-400 px-2 py-2 rounded-lg shadow-md drop-shadow-lg overflow-y-scroll overflow-x-visible'>
+        <div className='h-[350px] min-w-[300px] max-w-[350px] bg-gray-400 px-2 py-2 rounded-lg shadow-md drop-shadow-lg overflow-y-scroll overflow-x-visible'>
           {openLobbyArray.map(([key ,value]: [string, lobbyValue]) => {
             const { host, guest } = value
             return (
-              <div className='flex flex-row max-w-[400px] min-w-[320px] text-sm my-2 rounded-md hover:scale-110 transition-all duration-200 z-[2]'
+              <div className='flex flex-row max-w-[400px] min-w-[300px] text-[0.8rem] my-2 rounded-md hover:scale-110 transition-all duration-200 z-[2]'
                 key={key}
               >
-                <div className='basis-1/3 bg-gray-300 text-center px-3 py-1'>
+                <div className='basis-1/3 bg-gray-300 text-center px-1 py-1'>
                   {host}
                 </div>
-                <div className='basis-1/3 bg-stone-300 text-center px-3 py-1'>
+                <div className='basis-1/3 bg-stone-300 text-center px-1 py-1'>
                   {guest}
                 </div>
-                <div className='basis-1/3 bg-slate-300 text-center px-3 py-1'>
+                <div className='basis-1/3 bg-slate-300 text-center px-1 py-1'>
                   { guest.length === 0 && host !== clientId &&
                   <button className='bg-green-300 px-2 py-[0.1rem] text-sm rounded-md shadow-md drop-shadow-md hover:scale-x-105 active:scale-90 hover:bg-green-400 transition-all duration-200'
                     onClick={() => joinLobby(host)}
