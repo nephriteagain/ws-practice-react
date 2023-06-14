@@ -113,7 +113,7 @@ function App() {
       }
       if (response.type === 'start') {
         const payload = response.payload        
-        console.log(payload)
+        // console.log(payload)
         setJoinedLobbyId(null)
         setGameData(payload.game)
         setScore(payload.score)
@@ -123,7 +123,7 @@ function App() {
       }
       if (response.type === 'game') {
         const { players, turn, game, score } = response.payload
-        console.log(response.payload)
+        // console.log(response.payload)
         const isNewGame = game.every((box:string)=> {
           return box === ''
         })
@@ -159,9 +159,7 @@ function App() {
 
   }, [])
 
-  useEffect(() => {
-    console.log(joinedLobbyId, 'joined lobby id')
-  }, [joinedLobbyId])  
+
 
 
   const openLobbyArray = Object.entries(openLobbies)
