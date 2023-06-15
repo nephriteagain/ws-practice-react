@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 
 
@@ -9,103 +9,45 @@ import QuitToast from './components/QuitToast'
 import Lobby from './components/Lobby'
 import Box from './components/Box'
 
-interface lobbyValue {
+import {
+  createLobby,
+  quitGame,
+} from './utils/helper'
+
+export type clientId = string|null
+export type lobbyId = string|null
+
+export interface lobbyValue {
   host: string
   guest: string
 }
 
-type score = {
+export type score = {
   host: number
   guest: number
 }
 
-type lobbyObj = Record<string,lobbyValue>
+export type lobbyObj = Record<string,lobbyValue>
 
-type gameBox = 'x'|''|'o'
-type gameDataType = gameBox[]
+export type gameBox = 'x'|''|'o'
+export type gameDataType = gameBox[]
 
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
 
-const ws = new WebSocket(import.meta.env.VITE_WS)
+export const ws = new WebSocket(import.meta.env.VITE_WS)
+
 function App() {
-  const [ clientId, setClientId ] = useState<string|null>(null)
+  const [  isConnected, setIsConnected ] = useState<boolean>(false)
+  const [ clientId, setClientId ] = useState<clientId>(null)
   const [ openLobbies, setOpenLobbies ] = useState<lobbyObj>({})
-  const [ joinedLobbyId, setJoinedLobbyId ] = useState<string|null>(null)
+  const [ joinedLobbyId, setJoinedLobbyId ] = useState<lobbyId>(null)
 
   const [ gameData, setGameData ] = useState<gameDataType>(initialGame)
   const [ gameStart, setGameStart ] = useState<boolean>(false)
   const [ playerTurn, setPlayerTurn ] = useState<string>('')
   const [ players, setPlayers ] = useState<lobbyValue|null>(null)
   const [ score, setScore ] = useState<score|null>(null)
-
-  const btnRef = useRef<HTMLButtonElement>(null)
-  
-
-  function createLobby() {
-    if (!clientId) return
-    const data = {type: 'create', id: clientId}
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-  }
-
-  function deleteLobby() {
-    if (!clientId) return
-    const data = {type: 'delete', id: clientId}
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-  }
-
-  function joinLobby(lobbyId: string) {
-    if (!clientId) return
-    if (joinedLobbyId && joinedLobbyId !== lobbyId) {
-      leaveLobby(joinedLobbyId)
-    }
-
-    const data = {type: 'join', id: clientId, lobbyId}
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-    setJoinedLobbyId(lobbyId)
-  }
-
-  function leaveLobby(lobbyId: string) {
-    if (!clientId) return
-    const data = {type: 'leave', lobbyId, id: clientId}
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-    setJoinedLobbyId(null)
-  }
-
-  function move(box: string, index: number) {
-    if (playerTurn !== clientId) return
-    if (box !== '') return
-    if (players === null) return
-    const yourMove = players.host === clientId ? 'x' : 'o'
-    const nextTurn = playerTurn === players.host ? players.guest : players.host
-    const newGameData = gameData.map((box, i) => {
-      if (i === index) {
-        return yourMove
-      }
-      return box
-    })
-    const data = {
-      type: 'game', 
-      gameId: players.host, 
-      playerId: clientId, 
-      nextTurn,
-      gameData: newGameData,
-      id: clientId
-    }
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-  }
-
-  function quitGame() {
-    if (players === null || !clientId) return
-    const data = {type: 'quit', gameId: players.host, players, id: clientId}
-    const payload = JSON.stringify(data)
-    ws.send(payload)
-  }
 
 
 
@@ -117,6 +59,7 @@ function App() {
       if (response.type === 'connect') {
         console.log('connected')
         setClientId(response.payload.clientId)
+        setIsConnected(true)
       }
       if (response.type === 'lobby') {        
         const payload = response.payload           
@@ -195,7 +138,6 @@ function App() {
 
 
 
-
   const openLobbyArray = Object.entries(openLobbies)
 
   return (
@@ -209,9 +151,9 @@ function App() {
       </div>}
       <div className='w-fit h-fit mx-auto border-4 border-blue-300 rounded-lg px-3 py-3 shadow-md drop-shadow-md'>
         <div className='flex flex-row items-center justify-center mb-3'>
-          <button className='me-auto create bg-green-400 px-3 py-1 drop-shadow-md shadow-md rounded-md font-semibold hover:scale-105 active:100 transition-all duration-200 disabled:opacity-70'
-            onClick={createLobby} 
-            ref={btnRef}
+          <button className='me-auto create bg-green-400 px-3 py-1 drop-shadow-md shadow-md rounded-md font-semibold hover:scale-105 active:100 transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100'
+            onClick={() => createLobby(clientId)} 
+            disabled={!isConnected}
           >
             Create Lobby
           </button>
@@ -229,9 +171,8 @@ function App() {
                 host={host}
                 guest={guest}
                 clientId={clientId}
-                joinLobby={joinLobby}
-                deleteLobby={deleteLobby}
-                leaveLobby={leaveLobby}
+                joinedLobbyId={joinedLobbyId}
+                setJoinedLobbyId={setJoinedLobbyId}
               />
             )
           })} 
@@ -273,14 +214,17 @@ function App() {
                   key={index}
                   box={box}
                   index={index}
-                  move={move}
+                  playerTurn={playerTurn}
+                  clientId={clientId}
+                  players={players}
+                  gameData={gameData}
                 />
               )
             })}
           </div>
       </div>
       <button className='px-3 py-[0.1rem] absolute sm:top-4 top-20 right-4 bg-red-200 border-2 border-red-500 rounded-md shadow-md drop-shadow-md  hover:bg-red-700 hover:border-red-900 hover:text-white active:scale-90 transition-all duration-200'
-        onClick={quitGame}
+        onClick={() => quitGame(clientId, players)}
       >
         Leave Game
       </button>
