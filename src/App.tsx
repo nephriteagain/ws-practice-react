@@ -194,17 +194,23 @@ function App() {
         {score &&
         <div className='mx-auto mb-2   flex flex-row items-center justify-center min-w-[300px] w-fit h-fit gap-14'>          
           <div className='font-semibold text-xl bg-blue-400 px-4 py-1 rounded-md shadow-md drop-shadow-md'>
-            HOST: {score.host}
+            HOST:
+            <span className='ms-1 font-bold'>
+              {score.host}
+            </span>
           </div>
           <div className='font-semibold text-xl bg-red-400 px-4 py-1 rounded-md shadow-md drop-shadow-md'>
-            GUEST: {score.guest}
+            GUEST:
+            <span className='ms-1 font-bold'>
+              {score.guest}
+            </span>
           </div>          
         </div>
         }
         <div className={
           clientId === players?.host ? 
-          'mb-1 w-fit h-fit mx-auto px-6 py-1 shadow-md drop-shadow-md rounded-md font-bold text-2xl bg-blue-300' :
-          'mb-1 w-fit h-fit mx-auto px-6 py-1 shadow-md drop-shadow-md rounded-md font-bold text-2xl bg-red-300'
+          'mb-1 w-fit h-fit mx-auto px-6 py-1 shadow-md drop-shadow-md rounded-md font-bold text-2xl bg-blue-300 transition' :
+          'mb-1 w-fit h-fit mx-auto px-6 py-1 shadow-md drop-shadow-md rounded-md font-bold text-2xl bg-red-300 transition'
         }
         >
           {playerTurn.length > 0 && playerTurn === clientId ? 'Your Turn' : "Opponent's Turn"}
