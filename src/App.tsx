@@ -35,10 +35,10 @@ export type gameDataType = gameBox[]
 
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
+const URL = import.meta.env.VITE_WS
+export const ws = new WebSocket(URL)
 
-export const ws = new WebSocket(import.meta.env.VITE_WS)
-
-function App() {
+function App() {  
   const [  isConnected, setIsConnected ] = useState<boolean>(false)
   const [ clientId, setClientId ] = useState<clientId>(null)
   const [ openLobbies, setOpenLobbies ] = useState<lobbyObj>({})
@@ -53,6 +53,8 @@ function App() {
 
 
   useEffect(() => {
+    console.log("NOTE: backend is hosted in a free tier service, cold start might take a while")
+
     ws.onmessage = message => {
       const response = {...JSON.parse(message.data)}
       // console.log(response)
@@ -96,13 +98,11 @@ function App() {
           setGameData(game)
           setScore(score)
         }
-        
       }
 
       if (response.type === 'quit' || response.type === 'disconnect') {
         const { message } = response.payload
         console.log(message)
-        
         if (response.type === 'quit') {
           const element = document.querySelector('.quit-toast') as HTMLDivElement
           element.style.bottom = '3rem'
@@ -137,13 +137,19 @@ function App() {
 
   }, [])
 
+    useEffect(() => {
+      if (playerTurn === '') document.title = 'websocket tictactoe'
+      else if (playerTurn === clientId) document.title = 'your turn'
+      else if (playerTurn !== clientId) document.title = "opponent's turn"
+    }, [playerTurn])
+
 
 
   const openLobbyArray = Object.entries(openLobbies)
 
   return (
     <>
-      { !isConnected && <ConnectingModal />}
+      { !isConnected && <ConnectingModal isConnected={isConnected} />}
       <div className='my-8 font-bold text-3xl text-center'>
         Websocket Tictactoe
       </div>
