@@ -13,6 +13,7 @@ import {
   createLobby,
   quitGame,
 } from './utils/helper'
+import ConnectingModal from './components/ConnectingModal'
 
 export type clientId = string|null
 export type lobbyId = string|null
@@ -142,6 +143,7 @@ function App() {
 
   return (
     <>
+      { !isConnected && <ConnectingModal />}
       <div className='my-8 font-bold text-3xl text-center'>
         Websocket Tictactoe
       </div>

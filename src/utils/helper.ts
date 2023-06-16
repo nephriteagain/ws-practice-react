@@ -4,6 +4,7 @@ import type { clientId, lobbyId, lobbyValue, gameDataType } from "../App"
 import { ws } from '../App'
 
 
+
 export function createLobby(
   clientId: clientId,
 ) {
@@ -26,7 +27,7 @@ export function leaveLobby(
   lobbyId: string,
   clientId: string,
   setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>,
-  ) {
+  )  {
   if (!clientId) return
   const data = {type: 'leave', lobbyId, id: clientId}
   const payload = JSON.stringify(data)
@@ -42,7 +43,7 @@ export function joinLobby(
   leaveLobby: (
     lobbyId: string,
     clientId: string,
-    setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>
+    setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>,
   ) => void
   ) {
   if (!clientId) return
@@ -97,3 +98,4 @@ export function quitGame(
   const payload = JSON.stringify(data)
   ws.send(payload)
 }
+
