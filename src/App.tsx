@@ -35,7 +35,7 @@ export type gameDataType = gameBox[]
 
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
-const URL = import.meta.env.VITE_WS
+const URL = import.meta.env.VITE_WS_DEV
 export const ws = new WebSocket(URL)
 
 function App() {  
@@ -55,19 +55,6 @@ function App() {
   useEffect(() => {
     console.log("NOTE: backend is hosted in a free tier service, cold start might take a while")    
 
-    fetch(URL)
-      .then(response => {
-          if (!response.ok) {
-              throw new Error('Network response was not ok');
-          }
-          return response.json()
-      })
-      .then(data => {
-          console.log(data);
-      })
-      .catch(err => {
-          console.error('Fetch error:', err);
-      });
     
     ws.onmessage = message => {
       const response = {...JSON.parse(message.data)}
