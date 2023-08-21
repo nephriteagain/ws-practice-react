@@ -35,9 +35,10 @@ export type gameDataType = gameBox[]
 
 const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
-const URL = import.meta.env.VITE_WS_DEV
+const URL = import.meta.env.VITE_WS
 export const ws = new WebSocket(URL)
 
+// todo refactor this abomination
 function App() {  
   const [  isConnected, setIsConnected ] = useState<boolean>(false)
   const [ clientId, setClientId ] = useState<clientId>(null)
