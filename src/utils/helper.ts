@@ -94,3 +94,14 @@ export function quitGame(
   ws.send(payload)
 }
 
+export function changeDocumentTitleWhenOnGame(playerTurn: string, clientId: clientId) {
+  if (playerTurn === '') {
+    document.title = 'websocket tictactoe'
+  }
+  else if (playerTurn === clientId) {
+    document.title = 'your turn'
+  }
+  else if (playerTurn !== clientId) {
+    document.title = "opponent's turn"
+  }
+}
