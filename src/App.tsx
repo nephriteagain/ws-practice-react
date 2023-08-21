@@ -1,28 +1,22 @@
 
 
-import { useState, useEffect, useReducer } from 'react'
+import { useEffect, useReducer } from 'react'
 
 
 
+
+import Lobby from './components/Lobby'
+import LobbyHeader from './components/LobbyHeader'
+import Box from './components/Box'
+import ConnectingModal from './components/ConnectingModal'
 import DisconnectToast from './components/DisconnectToast'
 import QuitToast from './components/QuitToast'
-import Lobby from './components/Lobby'
-import Box from './components/Box'
+
+import { createLobby, quitGame } from './utils/helper'
 
 import {
-  createLobby,
-  quitGame,
-} from './utils/helper'
-import ConnectingModal from './components/ConnectingModal'
-
-import {
-  clientId,
-  lobbyId,
   lobbyValue,
-  score,
-  lobbyObj,
   gameBox,
-  gameDataType,
   reducerType,
   actions
 } from './types/types'
@@ -52,11 +46,16 @@ function App() {
   const [ gameReducer, dispatch ] = useReducer(reducer, initialState)
 
   const {
-    isConnected, clientId, openLobbies, joinedLobbyId, gameData,
-    gameStart, playerTurn, players, score
+    isConnected,
+    clientId,
+    openLobbies, 
+    joinedLobbyId, 
+    gameData,    
+    gameStart, 
+    playerTurn, 
+    players, 
+    score
   } = gameReducer
-
-
 
 
   useEffect(() => {
@@ -65,12 +64,14 @@ function App() {
     
     ws.onmessage = message => {
       const response = {...JSON.parse(message.data)}
-      // console.log(response)
+      console.log(response)
 
       if (response.type === 'connect') {
         console.log('connected')
         const clientId = response.payload.clientId
-        dispatch({type: actions.connect, payload: clientId})
+        dispatch({type: actions.connect, payload: {
+          clientId
+        }})
       }
       if (response.type === 'lobby') {        
         const payload = response.payload           
@@ -142,6 +143,7 @@ function App() {
 
   const openLobbyArray = Object.entries(openLobbies)
 
+
   return (
     <>
       { !isConnected && <ConnectingModal isConnected={isConnected} />}
@@ -153,17 +155,10 @@ function App() {
         {clientId}
       </div>}
       <div className='w-fit h-fit mx-auto border-4 border-blue-300 rounded-lg px-3 py-3 shadow-md drop-shadow-md'>
-        <div className='flex flex-row items-center justify-center mb-3'>
-          <button className='me-auto create bg-green-400 px-3 py-1 drop-shadow-md shadow-md rounded-md font-semibold hover:scale-105 active:100 transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100'
-            onClick={() => createLobby(clientId)} 
-            disabled={!isConnected}
-          >
-            Create Lobby
-          </button>
-          <p className='font-semibold text-gray-500'>
-          open lobbies
-          </p>
-          </div>
+        <LobbyHeader 
+          clientId={clientId}
+          isConnected={isConnected}
+        />
         
         <div className='h-[350px] min-w-[300px] max-w-[350px] bg-gray-400 px-2 py-2 rounded-lg shadow-md drop-shadow-lg overflow-y-scroll overflow-x-visible'>
           {openLobbyArray.map(([key ,value]: [string, lobbyValue]) => {

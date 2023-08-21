@@ -4,7 +4,7 @@ export default function connect(state: reducerType, action: action) {
 
     return {
         ...state,        
-        clientId,
+        clientId: clientId,
         isConnected: true        
     }
 }
