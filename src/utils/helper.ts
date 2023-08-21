@@ -1,5 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
-import type { clientId, lobbyId, lobbyValue, gameDataType } from "../App"
+import type { clientId, lobbyId, lobbyValue, gameDataType } from "../types/types"
 
 import { ws } from '../App'
 
@@ -26,35 +25,31 @@ export function deleteLobby(
 export function leaveLobby(
   lobbyId: string,
   clientId: string,
-  setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>,
+  handleLeaveLobby: () => void,
   )  {
   if (!clientId) return
   const data = {type: 'leave', lobbyId, id: clientId}
   const payload = JSON.stringify(data)
   ws.send(payload)
-  setJoinedLobbyId(null)
+  handleLeaveLobby()
 }
 
 export function joinLobby(
   lobbyId: string,
   clientId: clientId,
-  setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>,
+  handleJoinLobby: (lobbyId: string) => void,
   joinedLobbyId: lobbyId,
-  leaveLobby: (
-    lobbyId: string,
-    clientId: string,
-    setJoinedLobbyId: Dispatch<SetStateAction<lobbyId>>,
-  ) => void
+  handleLeaveLobby: () => void
   ) {
   if (!clientId) return
   if (joinedLobbyId && joinedLobbyId !== lobbyId) {
-    leaveLobby(joinedLobbyId, clientId, setJoinedLobbyId)
+    leaveLobby(joinedLobbyId, clientId, handleLeaveLobby)
   }
 
   const data = {type: 'join', id: clientId, lobbyId}
   const payload = JSON.stringify(data)
   ws.send(payload)
-  setJoinedLobbyId(lobbyId)
+  handleJoinLobby(lobbyId)
 }
 
 export function move(

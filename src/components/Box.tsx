@@ -3,7 +3,7 @@ import { IoMdClose } from 'react-icons/io'
 
 import { move } from '../utils/helper'
 
-import type { clientId, gameDataType, lobbyValue } from '../App'
+import type { clientId, gameDataType, lobbyValue } from '../types/types'
 
 interface BoxProps {
   box: string

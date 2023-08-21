@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useReducer } from 'react'
 
 
 
@@ -15,41 +15,47 @@ import {
 } from './utils/helper'
 import ConnectingModal from './components/ConnectingModal'
 
-export type clientId = string|null
-export type lobbyId = string|null
+import {
+  clientId,
+  lobbyId,
+  lobbyValue,
+  score,
+  lobbyObj,
+  gameBox,
+  gameDataType,
+  reducerType,
+  actions
+} from './types/types'
 
-export interface lobbyValue {
-  host: string
-  guest: string
-}
+import reducer from './reducer/reducer'
 
-export type score = {
-  host: number
-  guest: number
-}
+export const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
 
-export type lobbyObj = Record<string,lobbyValue>
-
-export type gameBox = 'x'|''|'o'
-export type gameDataType = gameBox[]
-
-const initialGame : gameBox[] = ['', '', '', '', '', '', '', '', '']
-
-const URL = import.meta.env.VITE_WS
+// always remember to fix this before shipping
+const URL = import.meta.env.VITE_WS_DEV
 export const ws = new WebSocket(URL)
 
-// todo refactor this abomination
-function App() {  
-  const [  isConnected, setIsConnected ] = useState<boolean>(false)
-  const [ clientId, setClientId ] = useState<clientId>(null)
-  const [ openLobbies, setOpenLobbies ] = useState<lobbyObj>({})
-  const [ joinedLobbyId, setJoinedLobbyId ] = useState<lobbyId>(null)
+export const initialState : reducerType = {
+  isConnected: false,
+  clientId: null,
+  openLobbies: {},
+  joinedLobbyId: null,
+  gameData: initialGame,
+  gameStart: false,
+  playerTurn: '',
+  players: null,
+  score: null
+}
 
-  const [ gameData, setGameData ] = useState<gameDataType>(initialGame)
-  const [ gameStart, setGameStart ] = useState<boolean>(false)
-  const [ playerTurn, setPlayerTurn ] = useState<string>('')
-  const [ players, setPlayers ] = useState<lobbyValue|null>(null)
-  const [ score, setScore ] = useState<score|null>(null)
+// todo refactor this abomination
+function App() {
+  const [ gameReducer, dispatch ] = useReducer(reducer, initialState)
+
+  const {
+    isConnected, clientId, openLobbies, joinedLobbyId, gameData,
+    gameStart, playerTurn, players, score
+  } = gameReducer
+
 
 
 
@@ -63,22 +69,19 @@ function App() {
 
       if (response.type === 'connect') {
         console.log('connected')
-        setClientId(response.payload.clientId)
-        setIsConnected(true)
+        const clientId = response.payload.clientId
+        dispatch({type: actions.connect, payload: clientId})
       }
       if (response.type === 'lobby') {        
         const payload = response.payload           
-        setOpenLobbies(payload)                
+        dispatch({type: actions.lobby, payload: payload})
       }
       if (response.type === 'start') {
-        const payload = response.payload        
+        const {game, score, turn, players} = response.payload        
         // console.log(payload)
-        setJoinedLobbyId(null)
-        setGameData(payload.game)
-        setScore(payload.score)
-        setGameStart(true)
-        setPlayerTurn(payload.turn)
-        setPlayers(payload.players)
+        dispatch({type: actions.start, payload: {
+          game, score, turn, players
+        }})
       }
       if (response.type === 'game') {
         const { players, turn, game, score } = response.payload
@@ -88,17 +91,15 @@ function App() {
         })
         if (isNewGame) {
           const timeout = setTimeout(() => {
-            setPlayers(players)
-            setPlayerTurn(turn)
-            setGameData(game)
-            setScore(score)
+            dispatch({type: actions.game, payload: {
+              players, turn, game, score
+            }})
             clearTimeout(timeout)
           },500)
         } else {
-          setPlayers(players)
-          setPlayerTurn(turn)
-          setGameData(game)
-          setScore(score)
+          dispatch({type: actions.game, payload: {
+            players, turn, game, score
+          }})
         }
       }
 
@@ -110,11 +111,7 @@ function App() {
           element.style.bottom = '3rem'
           const timeout = setTimeout(() => {
             element.style.bottom = '-10%'
-            setGameData(initialGame)
-            setGameStart(false)
-            setPlayerTurn('')
-            setPlayers(null)
-            setScore(null)
+            dispatch({type: actions.quit, payload: {}})
             clearTimeout(timeout)
           }, 2000)
         }
@@ -123,11 +120,7 @@ function App() {
           element.style.bottom = '3rem'
           const timeout = setTimeout(() => {
             element.style.bottom = '-10%'
-            setGameData(initialGame)
-            setGameStart(false)
-            setPlayerTurn('')
-            setPlayers(null)
-            setScore(null)
+            dispatch({type: actions.quit, payload: {}})
             clearTimeout(timeout)
           }, 2000)
         }
@@ -182,7 +175,7 @@ function App() {
                 guest={guest}
                 clientId={clientId}
                 joinedLobbyId={joinedLobbyId}
-                setJoinedLobbyId={setJoinedLobbyId}
+                dispatch={dispatch}
               />
             )
           })} 
